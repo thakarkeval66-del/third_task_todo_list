@@ -4,6 +4,8 @@ import '../models/todo_model.dart';
 import '../provider/todo_provider.dart';
 import '../widgets/custom_search_bar.dart';
 import '../widgets/todo_form.dart';
+import '../auth/login_screen.dart';
+import '../services/firebase_service.dart';
 import 'details_page.dart';
 
 class TodoListPage extends StatelessWidget {
@@ -15,12 +17,66 @@ class TodoListPage extends StatelessWidget {
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _handleCloudSync(BuildContext context) async {
+    // 0. Check if Firebase is even available on this platform/config
+    if (!FirebaseService.isAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cloud Sync is currently unavailable on this platform.')),
+      );
+      return;
+    }
+
+    final firebaseService = FirebaseService();
+    final todoProvider = context.read<TodoProvider>();
+
+    // 1. Check if logged in
+    if (firebaseService.currentUser == null) {
+      final loggedIn = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+      if (loggedIn != true) return;
+    }
+
+    // 2. Perform Sync
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      await firebaseService.syncToCloud(todoProvider.todos);
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close progress dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data synced to Cloud successfully!')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close progress dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sync failed: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Todo'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_upload_outlined),
+            onPressed: () => _handleCloudSync(context),
+            tooltip: 'Sync to Cloud',
+          ),
+        ],
       ),
       body: Column(
         children: [

@@ -5,11 +5,25 @@ import 'models/todo_model.dart';
 import 'provider/todo_provider.dart';
 import 'services/notification_service.dart';
 import 'package:third_task_todo_list/screen/todo_list_page.dart';
+import 'services/firebase_service.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive
+  // 1. Initialize Firebase with Error Handling
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    FirebaseService.setAvailable(true);
+  } catch (e) {
+    FirebaseService.setAvailable(false);
+    debugPrint('Firebase not initialized: $e');
+  }
+
+  // 2. Initialize Hive
   await Hive.initFlutter();
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(TodoStatusAdapter());

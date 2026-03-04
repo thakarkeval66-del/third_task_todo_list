@@ -48,9 +48,6 @@ class _TodoFormState extends State<TodoForm> {
       final totalSeconds = (mins * 60) + secs;
 
       if (totalSeconds <= 0 || totalSeconds > 300) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Time must be between 1 second and 5 minutes.')),
-        );
         return;
       }
 
@@ -68,14 +65,40 @@ class _TodoFormState extends State<TodoForm> {
           title: _titleController.text,
           description: _descriptionController.text,
           totalSeconds: totalSeconds,
-          remainingSeconds: totalSeconds, // Reset timer on edit as per common pattern
+          remainingSeconds: totalSeconds,
           status: TodoStatus.todo,
           lastStartedAt: null,
         );
-        context.read<TodoProvider>().updateTodo(0, updatedTodo); // index is handled inside provider by ID
+        context.read<TodoProvider>().updateTodo(0, updatedTodo);
       }
       Navigator.pop(context);
     }
+  }
+
+  String? _validateMinutes(String? value) {
+    if (value == null || value.isEmpty) return 'Required';
+    final mins = int.tryParse(value);
+    if (mins == null) return 'Invalid';
+    if (mins < 0 || mins > 5) return '0-5';
+
+    final secs = int.tryParse(_secondsController.text) ?? 0;
+    if (mins == 0 && secs == 0) return 'Min 1s';
+    if (mins == 5 && secs > 0) return 'Max 5m';
+
+    return null;
+  }
+
+  String? _validateSeconds(String? value) {
+    if (value == null || value.isEmpty) return 'Required';
+    final secs = int.tryParse(value);
+    if (secs == null) return 'Invalid';
+    if (secs < 0 || secs > 59) return '0-59';
+
+    final mins = int.tryParse(_minutesController.text) ?? 0;
+    if (mins == 0 && secs == 0) return 'Min 1s';
+    if (mins == 5 && secs > 0) return 'Max 5m';
+
+    return null;
   }
 
   @override
@@ -114,12 +137,15 @@ class _TodoFormState extends State<TodoForm> {
               ),
               const SizedBox(height: 12),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _minutesController,
                       decoration: const InputDecoration(labelText: 'Min (0-5)', border: OutlineInputBorder()),
                       keyboardType: TextInputType.number,
+                      validator: _validateMinutes,
+                      onChanged: (_) => _formKey.currentState!.validate(),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -128,6 +154,8 @@ class _TodoFormState extends State<TodoForm> {
                       controller: _secondsController,
                       decoration: const InputDecoration(labelText: 'Sec (0-59)', border: OutlineInputBorder()),
                       keyboardType: TextInputType.number,
+                      validator: _validateSeconds,
+                      onChanged: (_) => _formKey.currentState!.validate(),
                     ),
                   ),
                 ],
@@ -142,7 +170,7 @@ class _TodoFormState extends State<TodoForm> {
                   ),
                   ElevatedButton(
                     onPressed: _save,
-                    child: const Text('Save'),
+                    child: Text(widget.todo == null ? 'Save' : 'Edit'),
                   ),
                 ],
               ),
