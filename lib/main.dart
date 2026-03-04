@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:third_task_todo_list/screen/todo_list_page.dart';
+import 'package:provider/provider.dart';
 import 'models/todo_model.dart';
+import 'provider/todo_provider.dart';
 import 'services/notification_service.dart';
-
+import 'package:third_task_todo_list/screen/todo_list_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -21,8 +22,12 @@ void main() async {
   await NotificationService.init();
 
   runApp(
-    const MyApp(),
-
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TodoProvider()),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 
