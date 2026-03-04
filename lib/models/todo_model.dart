@@ -14,6 +14,7 @@ enum TodoStatus {
 
 @HiveType(typeId: 1)
 class Todo extends HiveObject {
+
   @HiveField(0)
   String id;
 
