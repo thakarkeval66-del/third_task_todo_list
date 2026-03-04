@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:third_task_todo_list/screen/todo_list_page.dart';
 import 'models/todo_model.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Hive
   await Hive.initFlutter();
-
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(TodoStatusAdapter());
   }
@@ -16,8 +16,13 @@ void main() async {
     Hive.registerAdapter(TodoAdapter());
   }
   await Hive.openBox<Todo>('todos');
+
+  // Initialize Notifications
+  await NotificationService.init();
+
   runApp(
-    const MyApp()
+    const MyApp(),
+
   );
 }
 
