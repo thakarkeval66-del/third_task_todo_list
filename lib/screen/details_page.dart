@@ -41,7 +41,7 @@ class DetailsPage extends StatelessWidget {
           Expanded(
             child: Consumer<TodoProvider>(
               builder: (context, provider, child) {
-                // Find the latest todo state from provider
+
                 final currentTodo = provider.todos.firstWhere(
                   (t) => t.id == todo.id,
                   orElse: () => todo,
