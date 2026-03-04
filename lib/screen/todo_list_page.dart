@@ -19,7 +19,7 @@ class TodoListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smooth Todos'),
+        title: const Text('Todo'),
         elevation: 0,
       ),
       body: Column(
@@ -79,25 +79,6 @@ class TodoListPage extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (todo.status != TodoStatus.done) ...[
-                              IconButton(
-                                icon: Icon(
-                                  todo.status == TodoStatus.inProgress
-                                      ? Icons.pause_circle_filled
-                                      : Icons.play_circle_filled,
-                                  color: todo.status == TodoStatus.inProgress
-                                      ? Colors.orange
-                                      : Colors.green,
-                                ),
-                                onPressed: () => provider.toggleStatus(todo),
-                                tooltip: todo.status == TodoStatus.inProgress ? 'Pause' : 'Start',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.check_circle, color: Colors.blue),
-                                onPressed: () => provider.markAsDone(todo),
-                                tooltip: 'Finish',
-                              ),
-                            ],
                             IconButton(
                               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                               onPressed: () => provider.deleteTodo(todo.id),
